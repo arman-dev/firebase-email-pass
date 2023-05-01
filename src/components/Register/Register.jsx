@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import { createUserWithEmailAndPassword, getAuth, sendEmailVerification, updateProfile } from "firebase/auth";
 import app from '../../firebase/firebase.config';
 import { Link } from 'react-router-dom';
 
@@ -16,24 +16,8 @@ const Register = () => {
         setError('');
         const email = event.target.email.value;
         const password = event.target.password.value;
-        console.log(email, password);
-        // validate password
-        // if(!/(?=.*[A-Z])/.test(password)){
-        //     setError('At least a UpperCase');
-        //     return;
-        // }
-        // else if(!/(?=.*[a-z])/.test(password)){
-        //     setError('At least a Lowercase');
-        //     return;
-        // }
-        // else if(!/(?=.*[0-9])/.test(password)){
-        //     setError('At least a Number');
-        //     return;
-        // }
-        // else if(password.length<6){
-        //     setError('At least 6 character');
-        //     return;
-        // }
+        const name = event.target.name.value;
+        console.log(email, password, name);
 
         if(!/(?=.*[A-Z].*[A-Z])/.test(password)){
             setError('Please at least two uppercase');
@@ -62,7 +46,9 @@ const Register = () => {
             console.log(loggedUser);
             setError('');
             event.target.reset();
-            setSuccess('User Created Successfully')
+            setSuccess('User Created Successfully');
+            emailVerification(result.user);
+            updateUserData(result.user, name);
 
         })
         .catch(error => {
@@ -71,6 +57,26 @@ const Register = () => {
         })
     }
 
+    const emailVerification = (user) => {
+        sendEmailVerification(user)
+        .then(result => {
+            console.log(result);
+            alert("Please Verify you email address");
+        })
+    }
+
+    // Update
+    const updateUserData = (user, name) =>{
+        updateProfile(user , {
+            displayName: name 
+        })
+        .then(() =>{
+            console.log("User name Updated");
+        })
+        .catch(error =>{
+            setError(error.message);
+        })
+    }
 
     const handleEmailChange = (event) =>{
         // console.log(event.target.value);
@@ -84,9 +90,11 @@ const Register = () => {
         <div>
             <h3> Register Here</h3>
             <form onSubmit={handleSubmit}>
-                <input onChange={handleEmailChange} type="email" name="email" id="email" placeholder='You Email'  required/>
+                <input className='m-2'  type="text" name="name" id="name" placeholder='You Name'  required/>
                 <br />
-                <input onBlur={handlePasswordBlur} type="password" name="password" id="password" placeholder='Your Password' required />
+                <input className='m-2' onChange={handleEmailChange} type="email" name="email" id="email" placeholder='You Email'  required/>
+                <br />
+                <input className='m-2' onBlur={handlePasswordBlur} type="password" name="password" id="password" placeholder='Your Password' required />
                 <br />
                 <p className='text-danger'>{error}</p>
                 <p className='text-success'>{success}</p>   

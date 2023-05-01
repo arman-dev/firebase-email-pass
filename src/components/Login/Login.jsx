@@ -1,5 +1,5 @@
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import React, { useState } from 'react';
+import { getAuth, sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
+import React, { useRef, useState } from 'react';
 import app from '../../firebase/firebase.config';
 import { Link } from 'react-router-dom';
 
@@ -9,6 +9,7 @@ const Login = () => {
 
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const emailRef = useRef();
 
     const handleLogin = event => {
         event.preventDefault();
@@ -44,6 +45,7 @@ const Login = () => {
         signInWithEmailAndPassword(auth, email, password)
         .then(result => {
             const loggedUser = result.user;
+            console.log(loggedUser);
             setSuccess('user login successfully')
             setError('');
         })
@@ -51,6 +53,21 @@ const Login = () => {
             setError(error.message)
         })
 
+    }
+    const handleResetPassword = event => {
+        const email = emailRef.current.value
+        if(!email){
+            alert('Please provide your email address to reset password  ')
+            return;
+        }
+        sendPasswordResetEmail(auth, email)
+        .then( () => {
+            alert('Please check Your Email');
+        })
+        .catch(error => {
+            console.log(error);
+            setError(error.message)
+        })
     }
     return (
         <div>
@@ -62,6 +79,7 @@ const Login = () => {
                         className="form-control"
                         id="email"
                         name='email'
+                        ref={emailRef}
                         placeholder="Enter email"
                         required
                     />
@@ -83,6 +101,7 @@ const Login = () => {
                     Submit
                 </button>
             </form>
+            <p><small>forget password? Please <button onClick={handleResetPassword} className='btn btn-link'>Reset</button></small></p>
             <p><small>New to this website? Please <Link to='/register' >Register</Link> </small></p>
             <p className='text-danger'>{error}</p>
             <p className='text-success'>{success}</p>
